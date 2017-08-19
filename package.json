@@ -53,6 +53,10 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
-    "babel-polyfill": "^6.9.0"
+    "babel-polyfill": "^6.9.0",
+    "generate-json-webpack-plugin": "^0.2.1",
+    "html-webpack-layout-plugin": "0.0.2",
+    "read-directory": "^2.1.0",
+    "webpack-directory-scan": "^1.2.0"
   }
 }

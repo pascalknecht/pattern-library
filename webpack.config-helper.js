@@ -1,13 +1,20 @@
 'use strict';
 
-const Path = require('path')
-const Webpack = require('webpack')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const Path = require('path');
+const Webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackLayoutPlugin = require('html-webpack-layout-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ExtractSASS = new ExtractTextPlugin('styles/bundle.css');
+const GenerateJsonPlugin = require('generate-json-webpack-plugin');
+const read = require('read-directory');
+const dirScan = require('webpack-directory-scan');
+
+const dirnames = [
+    './src/components/buttons/_buttons.html'
+];
 
 module.exports = (options) => {
-
   let webpackConfig = {
     devtool: options.devtool,
     entry: [
@@ -16,8 +23,8 @@ module.exports = (options) => {
       './src/scripts/index'
     ],
     output: {
-      path: Path.join(__dirname, 'dist'),
-      filename: 'bundle.js'
+      path: __dirname + "/dist",
+      filename: 'bundle.js',
     },
     plugins: [
       new Webpack.DefinePlugin({
@@ -26,7 +33,14 @@ module.exports = (options) => {
         }
       }),
       new HtmlWebpackPlugin({
-        template: './src/index.html'
+        template: './src/index.html',
+        layout: './lib/index.html'
+      }),
+      new HtmlWebpackLayoutPlugin({
+          layout: './lib/index.html'
+      }),
+      new GenerateJsonPlugin('components.json', {
+          foo: 'bar'
       })
     ],
     module: {
@@ -40,6 +54,17 @@ module.exports = (options) => {
       }]
     }
   };
+
+  dirnames.forEach((ele) => {
+      console.log(ele);
+      webpackConfig.plugins.push(
+        new HtmlWebpackPlugin({
+            filename: './components/_buttons.html',
+            template: ele,
+            layout: './lib/index.html'
+        })
+      );
+  });
 
   if (options.isProduction) {
     webpackConfig.entry = ['./src/scripts/index'];
@@ -62,6 +87,12 @@ module.exports = (options) => {
   } else {
     webpackConfig.plugins.push(
       new Webpack.HotModuleReplacementPlugin()
+    );
+
+    webpackConfig.plugins.push(
+        new GenerateJsonPlugin('./components.json', {
+            foo: 'bar'
+        })
     );
 
     webpackConfig.module.loaders.push({
