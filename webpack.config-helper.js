@@ -8,13 +8,17 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ExtractSASS = new ExtractTextPlugin('styles/bundle.css');
 const GenerateJsonPlugin = require('generate-json-webpack-plugin');
 const read = require('read-directory');
-const dirScan = require('webpack-directory-scan');
+const fs = require('fs');
+const handlebars = require('handlebars');
 
-const dirnames = [
-    './src/components/buttons/_buttons.html'
-];
+const dirnames = {};
+
+const basename = (str, sep) => str.substr(str.lastIndexOf(sep) + 1);
 
 module.exports = (options) => {
+    fs.readdirSync('./src/components').forEach(directory => {
+        dirnames[directory] = './src/components/' + directory + '/_' + directory + '.html';
+    });
   let webpackConfig = {
     devtool: options.devtool,
     entry: [
@@ -51,20 +55,22 @@ module.exports = (options) => {
         query: {
           presets: ['es2015']
         }
+      },
+      {
+        test: /\.html$/,
+        loader: 'handlebars-loader'
       }]
     }
   };
-
-  dirnames.forEach((ele) => {
-      console.log(ele);
-      webpackConfig.plugins.push(
+  for(var propertyName in dirnames) {
+    webpackConfig.plugins.push(
         new HtmlWebpackPlugin({
-            filename: './components/_buttons.html',
-            template: ele,
+            filename: './components/' + propertyName + '/' + basename(dirnames[propertyName], '/'),
+            template: dirnames[propertyName],
             layout: './lib/index.html'
         })
       );
-  });
+  }
 
   if (options.isProduction) {
     webpackConfig.entry = ['./src/scripts/index'];
@@ -90,9 +96,7 @@ module.exports = (options) => {
     );
 
     webpackConfig.plugins.push(
-        new GenerateJsonPlugin('./components.json', {
-            foo: 'bar'
-        })
+        new GenerateJsonPlugin('./components.json', dirnames)
     );
 
     webpackConfig.module.loaders.push({

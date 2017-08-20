@@ -55,6 +55,8 @@
   "dependencies": {
     "babel-polyfill": "^6.9.0",
     "generate-json-webpack-plugin": "^0.2.1",
+    "handlebars": "^4.0.10",
+    "handlebars-loader": "^1.5.0",
     "html-webpack-layout-plugin": "0.0.2",
     "read-directory": "^2.1.0",
     "webpack-directory-scan": "^1.2.0"
