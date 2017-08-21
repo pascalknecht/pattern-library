@@ -6,18 +6,19 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackLayoutPlugin = require('html-webpack-layout-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ExtractSASS = new ExtractTextPlugin('styles/bundle.css');
-const GenerateJsonPlugin = require('generate-json-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const read = require('read-directory');
 const fs = require('fs');
 const handlebars = require('handlebars');
 
 const dirnames = {};
 
+const componentPath = Path.resolve('./src/components');
 const basename = (str, sep) => str.substr(str.lastIndexOf(sep) + 1);
 
 module.exports = (options) => {
-    fs.readdirSync('./src/components').forEach(directory => {
-        dirnames[directory] = './src/components/' + directory + '/_' + directory + '.html';
+    fs.readdirSync(componentPath).forEach(directory => {
+        dirnames[directory] = componentPath + '/' + directory + '/_' + directory + '.html';
     });
   let webpackConfig = {
     devtool: options.devtool,
@@ -37,15 +38,13 @@ module.exports = (options) => {
         }
       }),
       new HtmlWebpackPlugin({
-        template: './src/index.html',
-        layout: './lib/index.html'
+        filename: './src/index.html',
+        template: './lib/template.ejs',
+        data: dirnames
       }),
-      new HtmlWebpackLayoutPlugin({
-          layout: './lib/index.html'
-      }),
-      new GenerateJsonPlugin('components.json', {
-          foo: 'bar'
-      })
+      new CopyWebpackPlugin([
+        { from: 'src/images', to: 'images/' }
+      ]),
     ],
     module: {
       loaders: [{
@@ -55,22 +54,19 @@ module.exports = (options) => {
         query: {
           presets: ['es2015']
         }
-      },
-      {
-        test: /\.html$/,
-        loader: 'handlebars-loader'
       }]
     }
   };
+  /*
   for(var propertyName in dirnames) {
     webpackConfig.plugins.push(
         new HtmlWebpackPlugin({
             filename: './components/' + propertyName + '/' + basename(dirnames[propertyName], '/'),
-            template: dirnames[propertyName],
-            layout: './lib/index.html'
+            template: './lib/template.ejs',
+            data: dirnames
         })
       );
-  }
+  }*/
 
   if (options.isProduction) {
     webpackConfig.entry = ['./src/scripts/index'];
@@ -93,10 +89,6 @@ module.exports = (options) => {
   } else {
     webpackConfig.plugins.push(
       new Webpack.HotModuleReplacementPlugin()
-    );
-
-    webpackConfig.plugins.push(
-        new GenerateJsonPlugin('./components.json', dirnames)
     );
 
     webpackConfig.module.loaders.push({

@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.9.0",
+    "copy-webpack-plugin": "^4.0.1",
     "generate-json-webpack-plugin": "^0.2.1",
     "handlebars": "^4.0.10",
     "handlebars-loader": "^1.5.0",
